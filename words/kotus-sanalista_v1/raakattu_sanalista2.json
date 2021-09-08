@@ -1,0 +1,120 @@
+[{
+    "s": "aakkonen",
+    "t": {
+      "tn": 38
+    }
+  },
+  {
+    "s": "aakkosellinen",
+    "t": {
+      "tn": 38
+    }
+  },
+  {
+    "s": "aakkosellisesti",
+    "t": {
+      "tn": 99
+    }
+  },
+  {
+    "s": "aakkosellisuus",
+    "t": {
+      "tn": 40
+    }
+  },
+  {
+    "s": "aakkosittain",
+    "t": {
+      "tn": 99
+    }
+  },
+  {
+    "s": "aakkosjärjestys"
+  },
+  {
+    "s": "aakkosnumeerinen"
+  },
+  {
+    "s": "aakkostaa",
+    "t": {
+      "tn": 53
+    }
+  },
+  {
+    "s": "aakkosto",
+    "t": {
+      "tn": 2
+    }
+  },
+  {
+    "s": "aakkostus",
+    "t": {
+      "tn": 39
+    }
+  },
+  {
+    "s": "aalloittain",
+    "t": {
+      "tn": 99
+    }
+  },
+  {
+    "s": "aalloittainen",
+    "t": {
+      "tn": 38
+    }
+  },
+  {
+    "s": "aalloittaisuus",
+    "t": {
+      "tn": 40
+    }
+  },
+  {
+    "s": "aallokas",
+    "t": {
+      "tn": 41,
+      "av": "A"
+    }
+  },
+  {
+    "s": "aallokko",
+    "t": {
+      "tn": 4,
+      "av": "A"
+    }
+  },
+  {
+    "s": "aallonharja"
+  },
+  {
+    "s": "aallonmurtaja"
+  },
+  {
+    "s": "aallonpituus"
+  },
+  {
+    "s": "aallonpohja"
+  },
+  {
+    "s": "aallota",
+    "t": {
+      "tn": 75,
+      "av": "I"
+    }
+  },
+  {
+    "s": "aallotar",
+    "t": {
+      "tn": 32,
+      "av": "C"
+    }
+  },
+  {
+    "s": "aallottaa",
+    "t": {
+      "tn": 53,
+      "av": "C"
+    }
+  }
+]
