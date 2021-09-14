@@ -4,7 +4,7 @@ import re
 from collections import Counter
 
 THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
-relevantFilePath = os.path.join(THIS_FOLDER, 'raakattu_sanalista2.json')
+relevantFilePath = os.path.join(THIS_FOLDER, 'raakattu_sanalista.json')
 sanalista = open(relevantFilePath, encoding='utf8')
 jsonSanat = json.load(sanalista)
 relevantFilePath = os.path.join(THIS_FOLDER, 'sanalistaTuloste.json')
