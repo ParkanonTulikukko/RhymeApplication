@@ -7,7 +7,7 @@ const vowel_list = 'aeiouyäöAEIOUYÄÖ'
 const diphthong_list = ["ai", "ei", "oi", "äi", "öi", "ey", "äy", "öy", 
   "au", "eu", "ou", "ui", "yi", "iu", "iy", "ie", "uo", "yö"]
 
-function extractRhymeBody(str) {
+function getRhymeBody(str) {
   for(var x = 0; x < str.length ; x++) {
     if (vowel_list.includes(str.charAt(x))) {
       return str.substring(x, (str.length))
@@ -29,22 +29,70 @@ function App() {
 
   const [ words, setWords] = useState([])
   const [ rhymingWords, setRhymingWords] = useState([])
-  const [ rhyme, setRhyme ] = useState('')
   const [ inputWord, setInputWord ] = useState('')
   const [ vocalRhymesAllowed, setVocalRhymesChecked] = useState(false)
   const [ syllableCount, setSyllableCount] = useState("all");
-  const [ rhymingSyllableCount, setRhymingSyllableCount ] = useState("all")
+  const [ rhymingSyllableCount, setRhymingSyllableCount ] = useState("same")
 
   useEffect(() => {
     getAll().then(words => {
       setWords(words)
-      setRhymingWords(words)
       })
     }, [])
 
   useEffect(() => { 
-    findRhymes(inputWord)
-    }, [inputWord, rhymingSyllableCount])  
+    findRhymes()
+    }, [inputWord, syllableCount, rhymingSyllableCount])  
+
+  //Function to get the last syllable of the word (or part of the word)
+  const separateLastSyllable = (subWord) => {
+    let syllable = ""
+    let nextLetter = ""
+    while (subWord.length > 0) {
+      let letter = subWord[subWord.length-1]
+      subWord = subWord.substring(0, subWord.length-1)
+      syllable = letter + syllable
+      //If the letter was the first one in the word, it must be the first one of the syllable
+      if (subWord.length === 0) {
+        return {
+          precedingText: "",
+          lastSyllable: syllable 
+          }
+        }
+      //console.log("kirjain on: " + letter)
+      //console.log("tavu on: " + syllable)
+      let precedingLetter = subWord[subWord.length-1]  
+      //if the letter is a vocal
+      if (vowel_list.includes(letter)) {
+        //if the preceding letter is a vocal
+        if (vowel_list.includes(precedingLetter)) {
+          //if the letters side by side dont form a diphtong
+          //and are not the same vocal
+          if ((!diphthong_list.includes(precedingLetter + letter)) && precedingLetter !== letter){
+            //the letter is the first letter of the last syllable
+            return {
+              precedingText: subWord,
+              lastSyllable: syllable 
+              }
+            }//if
+          }//if
+        }//if
+      //the letter is a consonant  
+      else {
+        //if the next letter is a vocal 
+        //and the letter is not part of the first consonant cluster of the word
+        if (vowel_list.includes(nextLetter) && (!allConsonants(subWord)) && nextLetter !== "") {
+          //the letter is the first letter of the last syllable
+          return {
+            precedingText: subWord,
+            lastSyllable: syllable 
+            }  
+          }//if
+        }//else
+      //The letter was not the first one of the syllable    
+      nextLetter = letter
+      }//while
+    }   
 
   //Function to slice the word in to syllables  
   const getSyllables = (word) => {
@@ -167,13 +215,17 @@ function App() {
     }//countSyllables  
 
   const changeSyllableCount = (e) => {
-    console.log(e.target.value)
-    setSyllableCount(e.target.value)
+    if (e.target.value !== "all")   
+      setSyllableCount(e.target.value)
+    else  
+      setSyllableCount(parseInt(e.target.value))
     }  
 
   const changeRhymingSyllableCount = (e) => {
-    setRhymingSyllableCount(e.target.value)
-
+    if (e.target.value === "same")
+      setRhymingSyllableCount(e.target.value)
+    else    
+      setRhymingSyllableCount(parseInt(e.target.value))
     }  
 
   const handleVocalRhymesChange = () => {
@@ -187,41 +239,75 @@ function App() {
   //find rhyming matches for the input word  
   const findRhymes = () => { 
     
-    let inputWordSyllableArray = getSyllables(inputWord)
-    console.log(rhymingSyllableCount)
-    let extractedRhymeBody = ""
-    if (rhymingSyllableCount !== "all") {
-      let firstIndex = inputWordSyllableArray.length - 1 - rhymingSyllableCount
-      let lastIndex = inputWordSyllableArray.length - 1  
-      let inputWordSyllables = inputWordSyllableArray.slice(firstIndex, lastIndex).join("")
-      extractedRhymeBody = extractRhymeBody(inputWordSyllables)
+    let inputWordSyllables = []
+    let inputWordTemp = inputWord
+    
+    while (inputWordTemp !== "") {
+      let {precedingText, lastSyllable} = separateLastSyllable(inputWordTemp)
+      inputWordSyllables.unshift(lastSyllable)
+      inputWordTemp = precedingText
       }
-    extractedRhymeBody = extractRhymeBody(inputWord)
 
     if (vocalRhymesAllowed) {
       setRhymingWords(words.filter(doesVocalRhyme))
       console.log("vokaaliriimit")
-      }
-    else {
+      } else {
       console.log("puhtaat riimit")
       setRhymingWords(words.filter(doesRhyme))
       }
-   
-    function doesRhyme(word) {
+
+    function doesRhyme(word) {      
+      let count = 0
+      let syllables = [] 
+      let wordTemp = word.word
+      let syllableRestriction = false
+      let rhymingSyllableRestriction = rhymingSyllableCount
+      if (rhymingSyllableCount === "same")
+        rhymingSyllableRestriction = inputWordSyllables.length
+      if (syllableCount !== "all") 
+        syllableRestriction = true
+      console.log(wordTemp)
+      while (wordTemp !== "") {
+        count++
+        let {precedingText, lastSyllable} = separateLastSyllable(wordTemp)
+        if (syllableRestriction) {
+          if (count > syllableCount) 
+            return false
+          if (precedingText === "" && count < syllableCount)
+            return false   
+          }
+        wordTemp = precedingText
+        syllables.unshift(lastSyllable)
+        if (count < rhymingSyllableRestriction) {
+          if (inputWordSyllables[inputWordSyllables.length-count] !== syllables[0])
+            return false
+            }//if   
+        else if (count === rhymingSyllableRestriction) {
+          let inputWordSyllable = inputWordSyllables[inputWordSyllables.length-count]
+          let wordSyllable = syllables[0]
+          if (getRhymeBody(inputWordSyllable) !== getRhymeBody(wordSyllable)) 
+            return false 
+          }//else if    
+        }//while
+      return true    
+      /*
       let syllable_array = getSyllables(word.word)
       if (syllableCount !== "all") {
         if (syllable_array.length !== syllableCount) 
           return false
-        }
+        }  
       let wordSyllables = word.word 
+      */
       /* if (rhymingSyllableCount !== "all") {    
         let firstIndex = syllable_array.length - 1 - rhymingSyllableCount
         let lastIndex = syllable_array.length - 1  
         wordSyllables = syllable_array.slice(firstIndex, lastIndex).join("")
-        }*/  
+        }*/
+      /*    
       console.log("extractedRhymeBody: " + extractedRhymeBody)
       console.log("extractRhymeBody(wordSyllables): " + extractRhymeBody(wordSyllables))
       return extractedRhymeBody === extractRhymeBody(wordSyllables)
+      */
       }  
 
     function doesVocalRhyme(word) {
@@ -295,14 +381,11 @@ function App() {
             defaultValue={rhymingSyllableCount}
             onChange={changeRhymingSyllableCount}
             >
-            <option value="all">ei rajausta</option>
+            <option value="same">koko hakusana</option>
             <option value="1">1</option>
             <option value="2">2</option>
             <option value="3">3</option>
           </select>          
-        </p>
-        <p>
-          {rhyme}
         </p>
         {rhymingWords.map(word =>
           <h2 key={word._id}>{word.word}</h2>
