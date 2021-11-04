@@ -30,9 +30,10 @@ function App() {
   const [ words, setWords] = useState([])
   const [ rhymingWords, setRhymingWords] = useState([])
   const [ inputWord, setInputWord ] = useState('')
-  const [ vocalRhymesAllowed, setVocalRhymesChecked] = useState(false)
-  const [ syllableCount, setSyllableCount] = useState("all");
+  const [ vocalRhymesAllowed, setVocalRhymesChecked] = useState(true)
+  const [ syllableCount, setSyllableCount] = useState("all")
   const [ rhymingSyllableCount, setRhymingSyllableCount ] = useState("same")
+  const [ rhymeType, setRhymeType ] = useState("allRhyme")
 
   useEffect(() => {
     getAll().then(words => {
@@ -42,7 +43,7 @@ function App() {
 
   useEffect(() => { 
     findRhymes()
-    }, [inputWord, syllableCount, rhymingSyllableCount])  
+    }, [syllableCount, rhymingSyllableCount])  
 
   //Function to get the last syllable of the word (or part of the word)
   const separateLastSyllable = (subWord) => {
@@ -94,143 +95,28 @@ function App() {
       }//while
     }   
 
-  //Function to slice the word in to syllables  
-  const getSyllables = (word) => {
-
-    /*
-    if (amount === "all") 
-      return word
-    */
-
-    let count = 0
-    let syllables = []
-    let syllable = ""
-    for (let i = word.length - 1; i >= 0; i--) {
-      let letter = word[i]
-      syllable = letter + syllable
-      //console.log("kirjain on: " + letter)
-      //console.log("tavu on: " + syllable)
-      let precedingLetter = "" 
-      let nextLetter = "" 
-      if (i+1 <= word.length - 1) 
-        nextLetter = word[i+1]
-      //if the letter is not the first letter of the word  
-      if (i !== 0) {  
-        precedingLetter = word[i-1]  
-        //if the letter is a vocal
-        if (vowel_list.includes(letter)) {
-          //if the preceding letter is a vocal
-          if (vowel_list.includes(precedingLetter)) {
-            //if the letters side by side dont form a diphtong
-            //and are not the same vocal
-            if ((!diphthong_list.includes(precedingLetter + letter)) && precedingLetter !== letter){
-              //the letter is the first letter of the new syllable
-              count++
-              syllables.unshift(syllable)
-              syllable = ""
-              }//if
-            }//if
-          }//if
-        //the letter is a consonant  
-        else {
-          //if the next letter is a vocal 
-          //and the letter is not part of the first consonant cluster of the word
-          if (vowel_list.includes(nextLetter) && (!allConsonants(word.substring(0,i+1))) && nextLetter !== "") {
-            //the letter is the first letter of the new syllable
-            count++
-            syllables.unshift(syllable)
-            syllable = ""  
-            }//if
-          }//else
-        }//if (i !== 0)
-        //The letter was first letter in the word
-        else {
-          count++
-          syllables.unshift(syllable)
-          }
-      }//for      
-    //console.log(syllables)
-    return syllables
-    }   
-
-  const countSyllables = () => {
-    setRhymingWords(rhymingWords.map(
-      word => {
-        console.log(word)
-        word.word = word.word + " kpl"
-        return word
-        }
-      ))
-    /*
-    extractSyllables("metsää")
-    extractSyllables("taloaan")
-    extractSyllables("maa") 
-    extractSyllables("stop") 
-    extractSyllables("rakkaus")
-    extractSyllables("sprintteri")
-    extractSyllables("traktori")
-    extractSyllables("kerskua")
-    extractSyllables("hioa")
-    extractSyllables("lauantai")
-
-    function extractSyllables (word) {
-      let count = 0
-      let wordWithHyphens = ""
-      for (let i = word.length - 1; i >= 0; i--) {
-        let letter = word[i]
-        let precedingLetter = "" 
-        let nextLetter = "" 
-        if (i+1 <= word.length - 1) 
-          nextLetter = word[i+1]
-        //if this is not the fist letter of the word  
-        if (i !== 0) {
-          precedingLetter = word[i-1]  
-          //if the letter is a vocal
-          if (vowel_list.includes(letter)) {
-            //if the preceding letter is a vocal
-            if (vowel_list.includes(precedingLetter)) {
-              //if the letters side by side wont form a diphtong
-              //and are not the same vocal
-              if ((!diphthong_list.includes(precedingLetter + letter)) && precedingLetter !== letter){
-                //the letter is the first letter of the new syllable
-                letter = "-" + letter
-                }//if
-              }//if
-            }//if
-          //the letter is a consonant  
-          else {
-            //if the next letter is a vocal 
-            //and the letter is not part of the first consonant cluster of the word
-            if (vowel_list.includes(nextLetter) && nextLetter !== "" && (!allConsonants(word.substring(0,i)))) {
-              //the letter is the first letter of the new syllable
-              letter = "-" + letter
-              }//if
-            }//else
-          } 
-        wordWithHyphens = letter + wordWithHyphens  
-        }//for      
-      console.log(wordWithHyphens)  
-      }//extractSyllables
-      */
-    }//countSyllables  
-
   const changeSyllableCount = (e) => {
-    if (e.target.value !== "all")   
+    if (e.target.value === "same")   
       setSyllableCount(e.target.value)
     else  
       setSyllableCount(parseInt(e.target.value))
     }  
 
   const changeRhymingSyllableCount = (e) => {
-    if (e.target.value === "same")
+    if (e.target.value === "wholeSearchWord")
       setRhymingSyllableCount(e.target.value)
     else    
       setRhymingSyllableCount(parseInt(e.target.value))
     }  
 
   const handleVocalRhymesChange = () => {
+    console.log("vokal ryhmesiin laitetaa: " + !vocalRhymesAllowed)
     setVocalRhymesChecked(!vocalRhymesAllowed)
     } 
+
+  const handleRhymeTypeChange = (e) => {
+    setRhymeType(e.target.value)
+    }  
 
   const handleTextInput = (e) => {
     setInputWord(e.target.value)
@@ -238,153 +124,177 @@ function App() {
 
   //find rhyming matches for the input word  
   const findRhymes = () => { 
-    
+    console.log("ETI RIIMEJÄ")
     let inputWordSyllables = []
     let inputWordTemp = inputWord
+
+
+
+    //we have to make another variable to reflect the value in the 
+    //syllable drop down menu, because the "same" option means
+    //the syllables are restricted according the search word.
+    //But for startes, we just copy the value. 
+    let syllableCountNumeric = syllableCount
+    //The case is the same for this variable
+    let rhymingSyllableCountNumeric = rhymingSyllableCount
     
+    //the search word must be separated in to syllables so it can be 
+    //compared to the result words
     while (inputWordTemp !== "") {
       let {precedingText, lastSyllable} = separateLastSyllable(inputWordTemp)
       inputWordSyllables.unshift(lastSyllable)
       inputWordTemp = precedingText
       }
+  
+    //while syllableCount variable can have string as a value ("same")
+    //syllableCountNumeric must have only numeric ones...  
+    if (syllableCountNumeric === "same")
+      syllableCountNumeric = inputWordSyllables.length
 
-    if (vocalRhymesAllowed) {
-      setRhymingWords(words.filter(doesVocalRhyme))
-      console.log("vokaaliriimit")
-      } else {
-      console.log("puhtaat riimit")
-      setRhymingWords(words.filter(doesRhyme))
-      }
+    //...and the case is the same with this one
+    if (rhymingSyllableCountNumeric  === "wholeSearchWord")
+      rhymingSyllableCountNumeric = inputWordSyllables.length
+
+    //Checks that the search filters makes sense. If that's not the case, 
+    //we set rhymingWords empty.
+    if (rhymingSyllableCountNumeric <= syllableCountNumeric &&
+      rhymingSyllableCountNumeric <= inputWordSyllables.length)
+      setRhymingWords(words.filter(doesRhyme))   
+    else 
+      setRhymingWords([]) 
+
+    function findVocals (syllable) {
+      var temp = ""
+      for (var letter of syllable) {
+        if (vowel_list.includes(letter)) {
+          temp = temp + letter
+          }    
+        }//for
+      return temp  
+      }//findVocals
 
     function doesRhyme(word) {      
       let count = 0
       let syllables = [] 
       let wordTemp = word.word
-      let syllableRestriction = false
-      let rhymingSyllableRestriction = rhymingSyllableCount
-      if (rhymingSyllableCount === "same")
-        rhymingSyllableRestriction = inputWordSyllables.length
-      if (syllableCount !== "all") 
-        syllableRestriction = true
+      var compareSyllables = function () {}
+      var compareFirstSyllables = function () {} 
+
       console.log(wordTemp)
+
+      //**** */
+      //TÄN PAIKAN VOISI VAIHTAA, KOSKA 
+      //EI RHYME TYPE MUUTU SANOJEN VÄLISSÄ
+      //***** */
+
+      if (rhymeType === "fullRhyme") {
+        //if the word should be a full rhyme, 
+        //every syllable after the first one should match 
+        compareSyllables = function (inputWordSyllable, wordSyllable) {
+          return inputWordSyllable === wordSyllable  
+          }
+        compareFirstSyllables = function (inputWordSyllable, wordSyllable) {
+          return getRhymeBody(inputWordSyllable) === getRhymeBody(wordSyllable)  
+          }  
+        }
+      else if (rhymeType === "vocalRhyme") {
+        //if the world should be a vocal rhyme,
+        //the vocals of each syllable should match
+        compareSyllables = function (inputWordSyllable, wordSyllable) {
+          return findVocals(inputWordSyllable) === findVocals(wordSyllable)  
+          }
+        compareFirstSyllables = compareSyllables  
+        }
+      else {
+        compareSyllables = function (inputWordSyllable, wordSyllable) {
+          return findVocals(inputWordSyllable) === findVocals(wordSyllable)  
+          }
+        compareFirstSyllables = compareSyllables    
+        }
+
       while (wordTemp !== "") {
         count++
         let {precedingText, lastSyllable} = separateLastSyllable(wordTemp)
-        if (syllableRestriction) {
-          if (count > syllableCount) 
-            return false
-          if (precedingText === "" && count < syllableCount)
-            return false   
-          }
         wordTemp = precedingText
         syllables.unshift(lastSyllable)
-        if (count < rhymingSyllableRestriction) {
-          if (inputWordSyllables[inputWordSyllables.length-count] !== syllables[0])
-            return false
-            }//if   
-        else if (count === rhymingSyllableRestriction) {
+
+        /*SYLLABLE COUNT RESTRICTIONS*/
+        /*****************************/
+        if (count > syllableCountNumeric) 
+          return false
+        if (precedingText === "" && count < syllableCountNumeric)
+          return false   
+        
+        /*RHYMING SYLLABLE COUNT RESTRICTIONS*/
+        /*************************************/  
+        if (count < rhymingSyllableCountNumeric) {
+          //the syllables must rhyme (in a way or another) 
+          if (!compareSyllables(inputWordSyllables[inputWordSyllables.length-count], syllables[0])) 
+            return false   
+          }//if  
+        else if (count === rhymingSyllableCountNumeric) {
           let inputWordSyllable = inputWordSyllables[inputWordSyllables.length-count]
           let wordSyllable = syllables[0]
-          if (getRhymeBody(inputWordSyllable) !== getRhymeBody(wordSyllable)) 
+          //If we are looking for a full rhyme, the rhyme body of the first syllable
+          //must be exactly same. With non-full rhyme, we compare each syllable in the same way. 
+          if (!compareFirstSyllables(inputWordSyllable, wordSyllable)) 
             return false 
-          }//else if    
+          }//else if
+
         }//while
       return true    
-      /*
-      let syllable_array = getSyllables(word.word)
-      if (syllableCount !== "all") {
-        if (syllable_array.length !== syllableCount) 
-          return false
-        }  
-      let wordSyllables = word.word 
-      */
-      /* if (rhymingSyllableCount !== "all") {    
-        let firstIndex = syllable_array.length - 1 - rhymingSyllableCount
-        let lastIndex = syllable_array.length - 1  
-        wordSyllables = syllable_array.slice(firstIndex, lastIndex).join("")
-        }*/
-      /*    
-      console.log("extractedRhymeBody: " + extractedRhymeBody)
-      console.log("extractRhymeBody(wordSyllables): " + extractRhymeBody(wordSyllables))
-      return extractedRhymeBody === extractRhymeBody(wordSyllables)
-      */
-      }  
-
-    function doesVocalRhyme(word) {
-
-      let inputClusters = findVocalClusters(inputWord)
-      let wordClusters = findVocalClusters(word.word)  
-      return equal(inputClusters, wordClusters)
-
-      function equal(a, b) {
-        // if length is not equal
-        if(a.length !== b.length)
-          return false
-        else {
-          // comparing each element of an array
-          for(var i = 0; i < a.length; i++) {
-            if(a[i] !== b[i])
-              return false
-            }//for
-            return true
-           } 
-        }//equal
-
-      function findVocalClusters (word) {
-        //console.log(ch);
-        var temp = ""
-        var vocalClusters = []
-        for (var letter of word) {
-          if (vowel_list.includes(letter)) {
-            temp = temp + letter
-            }
-          else {
-            if (temp !== "") {
-              vocalClusters.push(temp)
-              temp = ""
-              }
-            }    
-          }//for
-        if (temp !== "") {
-          vocalClusters.push(temp)
-          }  
-        return vocalClusters  
-        }//findVocalClusters
-      }
-    }//findRhymes
+      }//doesRhyme  
+    }//findRhymes  
 
   return (
     <div className="App">
       <header className="App-header">
         <p>
-          <input type="text" value={inputWord} onChange={handleTextInput}></input><br/>
-          <input type="checkbox" id="perfectRhyme"></input>
-          <label htmlFor="perfectRhyme">puhtaat riimit</label>
-          <input type="checkbox" id="vocalRhyme" onChange={handleVocalRhymesChange}/>
-          <label htmlFor="vocalRhyme">ei-puhtaat riimit</label><br/>
-          <label htmlFor="syllables">Tavujen lukumäärä</label>
+          <input type="text" value={inputWord} onChange={handleTextInput}></input>&nbsp;
+          <button type="button" onClick={findRhymes}>Hae riimit</button><br/> 
+          <form>
+            <input type="radio" value="allRhyme" id="allRhyme" checked={rhymeType === "allRhyme"}
+              onChange={handleRhymeTypeChange}
+              />
+            <label htmlFor="allRhyme">kaikki riimit</label>
+            <input type="radio" value="fullRhyme" id="fullRhyme" checked={rhymeType === "fullRhyme"} 
+              onChange={handleRhymeTypeChange} 
+              />
+            <label htmlFor="perfectRhyme">puhtaat riimit</label>
+            <input type="radio" value="vocalRhyme" id="vocalRhyme" checked={rhymeType === "vocalRhyme"} 
+              onChange={handleRhymeTypeChange}
+              />
+            <label htmlFor="vocalRhyme">ei-puhtaat riimit</label><br/>
+          </form>
+          <label htmlFor="syllables">Sanassa tavuja</label>
           <select 
             id="syllableCount" 
             value={syllableCount} 
             defaultValue={syllableCount}
             onChange={changeSyllableCount}
             >
-            <option value="all">ei rajausta</option>
+            <option value="same">kuten hakusanassa</option>
             <option value="1">1</option>
             <option value="2">2</option>
             <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
           </select>&nbsp;
-          <label htmlFor="rhymingSyllables">Riimitavujen lukumäärä</label>
+          <label htmlFor="rhymingSyllables">Rimmaavia tavuja</label>
           <select 
             id="syllables"
             value={rhymingSyllableCount}
             defaultValue={rhymingSyllableCount}
             onChange={changeRhymingSyllableCount}
             >
-            <option value="same">koko hakusana</option>
+            <option value="wholeSearchWord">koko hakusana</option>
             <option value="1">1</option>
             <option value="2">2</option>
             <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
           </select>          
         </p>
         {rhymingWords.map(word =>
