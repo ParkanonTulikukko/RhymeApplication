@@ -31,8 +31,8 @@ function App() {
   const [ rhymingWords, setRhymingWords] = useState([])
   const [ inputWord, setInputWord ] = useState('')
   const [ vocalRhymesAllowed, setVocalRhymesChecked] = useState(true)
-  const [ syllableCount, setSyllableCount] = useState("all")
-  const [ rhymingSyllableCount, setRhymingSyllableCount ] = useState("same")
+  const [ syllableCount, setSyllableCount] = useState("same")
+  const [ rhymingSyllableCount, setRhymingSyllableCount ] = useState("wholeSearchWord")
   const [ rhymeType, setRhymeType ] = useState("allRhyme")
 
   useEffect(() => {
@@ -127,8 +127,17 @@ function App() {
     console.log("ETI RIIMEJÄ")
     let inputWordSyllables = []
     let inputWordTemp = inputWord
-
-
+    var compareSyllables = function () {}
+    var compareFirstSyllables = function () {} 
+    var fullRhymeSyllablesCompairer = function (inputWordSyllable, wordSyllable) {
+      return inputWordSyllable === wordSyllable  
+      }
+    var fullRhymeFirstSyllableCompairer = function (inputWordSyllable, wordSyllable) {
+      return getRhymeBody(inputWordSyllable) === getRhymeBody(wordSyllable)  
+      }    
+    var vocalRhymeSyllableCompairer = function (inputWordSyllable, wordSyllable) {
+      return findVocals(inputWordSyllable) === findVocals(wordSyllable)  
+      }  
 
     //we have to make another variable to reflect the value in the 
     //syllable drop down menu, because the "same" option means
@@ -158,9 +167,44 @@ function App() {
     //Checks that the search filters makes sense. If that's not the case, 
     //we set rhymingWords empty.
     if (rhymingSyllableCountNumeric <= syllableCountNumeric &&
-      rhymingSyllableCountNumeric <= inputWordSyllables.length)
-      setRhymingWords(words.filter(doesRhyme))   
-    else 
+      rhymingSyllableCountNumeric <= inputWordSyllables.length) {
+      if (rhymeType === "fullRhyme") {
+        //if the word should be a full rhyme, 
+        //every syllable after the first one should match 
+        compareSyllables = fullRhymeSyllablesCompairer
+        compareFirstSyllables = fullRhymeFirstSyllableCompairer
+        setRhymingWords(words.filter(doesRhyme))  
+        }
+  
+      else if (rhymeType === "vocalRhyme") {
+        //if the world should be a vocal rhyme,
+        //the vocals of each syllable should match
+        compareSyllables = vocalRhymeSyllableCompairer
+        compareFirstSyllables = vocalRhymeSyllableCompairer
+        //this FUNCTIONS will accept full rhymes too,
+        //so they must be filtered out afterwards
+        var vocalAndFullRhymes = words.filter(doesRhyme)
+  
+        //lets find the full rhymes...
+        compareSyllables = fullRhymeSyllablesCompairer
+        compareFirstSyllables = fullRhymeFirstSyllableCompairer
+        var fullRhymes = words.filter(doesRhyme)
+        
+        //...and then substract all the full rhymes
+        var substraction = vocalAndFullRhymes.filter(word => !fullRhymes.includes(word))
+        setRhymingWords(substraction) 
+        }
+  
+      //ALL RHYMES 
+      else {
+        compareSyllables = function (inputWordSyllable, wordSyllable) {
+          return findVocals(inputWordSyllable) === findVocals(wordSyllable)  
+          }
+        compareFirstSyllables = compareSyllables   
+        setRhymingWords(words.filter(doesRhyme)) 
+        }
+      }//if
+    else // ...the search filters are in conflict 
       setRhymingWords([]) 
 
     function findVocals (syllable) {
@@ -177,40 +221,8 @@ function App() {
       let count = 0
       let syllables = [] 
       let wordTemp = word.word
-      var compareSyllables = function () {}
-      var compareFirstSyllables = function () {} 
 
       console.log(wordTemp)
-
-      //**** */
-      //TÄN PAIKAN VOISI VAIHTAA, KOSKA 
-      //EI RHYME TYPE MUUTU SANOJEN VÄLISSÄ
-      //***** */
-
-      if (rhymeType === "fullRhyme") {
-        //if the word should be a full rhyme, 
-        //every syllable after the first one should match 
-        compareSyllables = function (inputWordSyllable, wordSyllable) {
-          return inputWordSyllable === wordSyllable  
-          }
-        compareFirstSyllables = function (inputWordSyllable, wordSyllable) {
-          return getRhymeBody(inputWordSyllable) === getRhymeBody(wordSyllable)  
-          }  
-        }
-      else if (rhymeType === "vocalRhyme") {
-        //if the world should be a vocal rhyme,
-        //the vocals of each syllable should match
-        compareSyllables = function (inputWordSyllable, wordSyllable) {
-          return findVocals(inputWordSyllable) === findVocals(wordSyllable)  
-          }
-        compareFirstSyllables = compareSyllables  
-        }
-      else {
-        compareSyllables = function (inputWordSyllable, wordSyllable) {
-          return findVocals(inputWordSyllable) === findVocals(wordSyllable)  
-          }
-        compareFirstSyllables = compareSyllables    
-        }
 
       while (wordTemp !== "") {
         count++
@@ -235,7 +247,7 @@ function App() {
         else if (count === rhymingSyllableCountNumeric) {
           let inputWordSyllable = inputWordSyllables[inputWordSyllables.length-count]
           let wordSyllable = syllables[0]
-          //If we are looking for a full rhyme, the rhyme body of the first syllable
+          //If we are looking for a full rhyme, the rhyme body of the first rhyming syllable
           //must be exactly same. With non-full rhyme, we compare each syllable in the same way. 
           if (!compareFirstSyllables(inputWordSyllable, wordSyllable)) 
             return false 
