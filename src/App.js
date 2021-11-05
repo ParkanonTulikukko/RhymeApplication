@@ -34,6 +34,7 @@ function App() {
   const [ syllableCount, setSyllableCount] = useState("same")
   const [ rhymingSyllableCount, setRhymingSyllableCount ] = useState("wholeSearchWord")
   const [ rhymeType, setRhymeType ] = useState("allRhyme")
+  const [ sorting, setSorting ] = useState("similarity")
 
   useEffect(() => {
     getAll().then(words => {
@@ -44,6 +45,34 @@ function App() {
   useEffect(() => { 
     findRhymes()
     }, [syllableCount, rhymingSyllableCount])  
+
+  useEffect(() => {
+    sort()
+    /*
+    console.log("sorttaus on: " + sorting)
+    if (sorting === "alphabetical") {
+      
+      console.log(rhymingWords.sort((word1, word2) => word1.word.localeCompare(word2.word)))
+      var tmp = rhymingWords.sort((word1, word2) => word1.word.localeCompare(word2.word))
+      setRhymingWords(tmp)
+      setRhymingWords(words.filter(doesRhyme)) 
+      }
+    else if (sorting === "similarity") {
+      //setRhymingWords(rhymingWords.sort((word1, word2) => word2.word.localeCompare(word1.word)))
+      }
+      */  
+    }, [sorting])   
+
+  const sort = () => {
+    if (sorting === "alphabetical") {
+      let sortedWords = [...rhymingWords].sort((word1, word2) => word1.word.localeCompare(word2.word))
+      setRhymingWords(sortedWords)  
+      }
+    else if (sorting === "similarity") {
+      let sortedWords = [...rhymingWords].sort((word1, word2) => word2.word.localeCompare(word1.word))
+      setRhymingWords(sortedWords)  
+      }      
+    }
 
   //Function to get the last syllable of the word (or part of the word)
   const separateLastSyllable = (subWord) => {
@@ -120,6 +149,10 @@ function App() {
 
   const handleTextInput = (e) => {
     setInputWord(e.target.value)
+    }  
+
+  const changeSorting = (e) => {
+    setSorting(e.target.value)
     }  
 
   //find rhyming matches for the input word  
@@ -307,7 +340,18 @@ function App() {
             <option value="4">4</option>
             <option value="5">5</option>
             <option value="6">6</option>
-          </select>          
+          </select><br/> 
+          <label htmlFor="sort">Lajittele</label>&nbsp;
+          <select 
+            id="sorting" 
+            value={sorting} 
+            defaultValue={sorting}
+            onChange={changeSorting}
+            >
+            <option value="alphabetical">aakkosjärjestys</option>
+            <option value="similarity">samankaltaisuus</option>
+            <option value="popularity" disabled>suosituimmat</option>
+          </select>         
         </p>
         {rhymingWords.map(word =>
           <h2 key={word._id}>{word.word}</h2>
