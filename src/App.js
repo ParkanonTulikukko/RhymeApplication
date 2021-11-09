@@ -47,31 +47,19 @@ function App() {
     }, [syllableCount, rhymingSyllableCount])  
 
   useEffect(() => {
-    sort()
-    /*
-    console.log("sorttaus on: " + sorting)
-    if (sorting === "alphabetical") {
-      
-      console.log(rhymingWords.sort((word1, word2) => word1.word.localeCompare(word2.word)))
-      var tmp = rhymingWords.sort((word1, word2) => word1.word.localeCompare(word2.word))
-      setRhymingWords(tmp)
-      setRhymingWords(words.filter(doesRhyme)) 
-      }
-    else if (sorting === "similarity") {
-      //setRhymingWords(rhymingWords.sort((word1, word2) => word2.word.localeCompare(word1.word)))
-      }
-      */  
+    setRhymingWords(sort(rhymingWords)) 
     }, [sorting])   
 
-  const sort = () => {
+  const sort = (rhymingWords) => {
+    let sortedWords = []
+    console.log("SORTATAAN")
     if (sorting === "alphabetical") {
-      let sortedWords = [...rhymingWords].sort((word1, word2) => word1.word.localeCompare(word2.word))
-      setRhymingWords(sortedWords)  
+      sortedWords = [...rhymingWords].sort((word1, word2) => word1.word.localeCompare(word2.word))  
       }
     else if (sorting === "similarity") {
-      let sortedWords = [...rhymingWords].sort((word1, word2) => word2.word.localeCompare(word1.word))
-      setRhymingWords(sortedWords)  
+      sortedWords = [...rhymingWords].sort((word1, word2) => word2.word.localeCompare(word1.word))
       }      
+    return sortedWords  
     }
 
   //Function to get the last syllable of the word (or part of the word)
@@ -199,46 +187,55 @@ function App() {
 
     //Checks that the search filters makes sense. If that's not the case, 
     //we set rhymingWords empty.
-    if (rhymingSyllableCountNumeric <= syllableCountNumeric &&
-      rhymingSyllableCountNumeric <= inputWordSyllables.length) {
-      if (rhymeType === "fullRhyme") {
-        //if the word should be a full rhyme, 
-        //every syllable after the first one should match 
-        compareSyllables = fullRhymeSyllablesCompairer
-        compareFirstSyllables = fullRhymeFirstSyllableCompairer
-        setRhymingWords(words.filter(doesRhyme))  
-        }
-  
-      else if (rhymeType === "vocalRhyme") {
-        //if the world should be a vocal rhyme,
-        //the vocals of each syllable should match
-        compareSyllables = vocalRhymeSyllableCompairer
-        compareFirstSyllables = vocalRhymeSyllableCompairer
-        //this FUNCTIONS will accept full rhymes too,
-        //so they must be filtered out afterwards
-        var vocalAndFullRhymes = words.filter(doesRhyme)
-  
-        //lets find the full rhymes...
-        compareSyllables = fullRhymeSyllablesCompairer
-        compareFirstSyllables = fullRhymeFirstSyllableCompairer
-        var fullRhymes = words.filter(doesRhyme)
-        
-        //...and then substract all the full rhymes
-        var substraction = vocalAndFullRhymes.filter(word => !fullRhymes.includes(word))
-        setRhymingWords(substraction) 
-        }
-  
-      //ALL RHYMES 
-      else {
-        compareSyllables = function (inputWordSyllable, wordSyllable) {
-          return findVocals(inputWordSyllable) === findVocals(wordSyllable)  
+
+    const checkFiltersAndExecuteSearch = () => {
+      if (rhymingSyllableCountNumeric <= syllableCountNumeric &&
+        rhymingSyllableCountNumeric <= inputWordSyllables.length) {
+
+        if (rhymeType === "fullRhyme") {
+          //if the word should be a full rhyme, 
+          //every syllable after the first one should match 
+          compareSyllables = fullRhymeSyllablesCompairer
+          compareFirstSyllables = fullRhymeFirstSyllableCompairer
+          return words.filter(doesRhyme)  
           }
-        compareFirstSyllables = compareSyllables   
-        setRhymingWords(words.filter(doesRhyme)) 
-        }
-      }//if
-    else // ...the search filters are in conflict 
-      setRhymingWords([]) 
+    
+        else if (rhymeType === "vocalRhyme") {
+          //if the world should be a vocal rhyme,
+          //the vocals of each syllable should match
+          compareSyllables = vocalRhymeSyllableCompairer
+          compareFirstSyllables = vocalRhymeSyllableCompairer
+          //this FUNCTIONS will accept full rhymes too,
+          //so they must be filtered out afterwards
+          var vocalAndFullRhymes = words.filter(doesRhyme)
+    
+          //lets find the full rhymes...
+          compareSyllables = fullRhymeSyllablesCompairer
+          compareFirstSyllables = fullRhymeFirstSyllableCompairer
+          var fullRhymes = words.filter(doesRhyme)
+          
+          //...and then substract all the full rhymes
+          var substraction = vocalAndFullRhymes.filter(word => !fullRhymes.includes(word))
+          return substraction 
+          }
+    
+        //ALL RHYMES 
+        else {
+          compareSyllables = function (inputWordSyllable, wordSyllable) {
+            return findVocals(inputWordSyllable) === findVocals(wordSyllable)  
+            }
+          compareFirstSyllables = compareSyllables   
+          console.log("aal rhymes")
+          console.log(words.filter(doesRhyme))
+          return words.filter(doesRhyme)
+          }
+        }//if
+      else // ...the search filters are in conflict 
+        return [] 
+      }//checkFiltersAndExecuteSearch  
+
+    setRhymingWords(sort(checkFiltersAndExecuteSearch()))
+    //sort()  
 
     function findVocals (syllable) {
       var temp = ""
