@@ -1,3 +1,7 @@
+//
+//HAKUSANALLA VOI SAADA SAMAN SANAN AINAKIN
+//KAIKKIEN RIIMIEN TAPAUKSESSA
+//
 import logo from './logo.svg';
 import './App.css';
 import React, { useState, useEffect } from 'react'
@@ -24,6 +28,28 @@ function allConsonants(str) {
     }
   return true
   }    
+
+const levenshteinDistance = (str1 = '', str2 = '') => {
+  const track = Array(str2.length + 1).fill(null).map(() =>
+  Array(str1.length + 1).fill(null));
+  for (let i = 0; i <= str1.length; i += 1) {
+      track[0][i] = i;
+  }
+  for (let j = 0; j <= str2.length; j += 1) {
+      track[j][0] = j;
+  }
+  for (let j = 1; j <= str2.length; j += 1) {
+      for (let i = 1; i <= str1.length; i += 1) {
+        const indicator = str1[i - 1] === str2[j - 1] ? 0 : 1;
+        track[j][i] = Math.min(
+            track[j][i - 1] + 1, // deletion
+            track[j - 1][i] + 1, // insertion
+            track[j - 1][i - 1] + indicator, // substitution
+        );
+      }
+  }
+  return track[str2.length][str1.length];
+}  
 
 function App() {
 
@@ -57,7 +83,9 @@ function App() {
       sortedWords = [...rhymingWords].sort((word1, word2) => word1.word.localeCompare(word2.word))  
       }
     else if (sorting === "similarity") {
-      sortedWords = [...rhymingWords].sort((word1, word2) => word2.word.localeCompare(word1.word))
+      sortedWords = [...rhymingWords].sort((word1, word2) => {
+        return levenshteinDistance(word1.word, inputWord) - levenshteinDistance(word2.word, inputWord)
+        })
       }      
     return sortedWords  
     }
@@ -248,11 +276,15 @@ function App() {
       }//findVocals
 
     function doesRhyme(word) {      
+
       let count = 0
       let syllables = [] 
       let wordTemp = word.word
-
       console.log(wordTemp)
+
+      //if the word is exactly same as the search word we return false
+      if (inputWord === word.word) 
+        return false
 
       while (wordTemp !== "") {
         count++
