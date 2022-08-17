@@ -1,7 +1,4 @@
-//
-//HAKUSANALLA VOI SAADA SAMAN SANAN AINAKIN
-//KAIKKIEN RIIMIEN TAPAUKSESSA
-//
+import * as wordlist from './wordlist.json';
 import logo from './logo.svg';
 import './App.css';
 import React, { useState, useEffect } from 'react'
@@ -63,9 +60,16 @@ function App() {
   const [ sorting, setSorting ] = useState("similarity")
 
   useEffect(() => {
+    //console.log("tiedostosta...")
+    //console.log(wordlist['default'])
+    setWords(wordlist['default'])
+    /*
     getAll().then(words => {
+      console.log("databasesta...")
+      console.log(words)
       setWords(words)
       })
+    */  
     }, [])
 
   useEffect(() => { 
@@ -280,7 +284,7 @@ function App() {
       let count = 0
       let syllables = [] 
       let wordTemp = word.word
-      console.log(wordTemp)
+      //console.log(wordTemp)
 
       //if the word is exactly same as the search word we return false
       if (inputWord === word.word) 

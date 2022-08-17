@@ -8,16 +8,16 @@ relevantFilePath = os.path.join(THIS_FOLDER, 'raakattu_sanalista.json')
 sanalista = open(relevantFilePath, encoding='utf8')
 jsonSanat = json.load(sanalista)
 relevantFilePath = os.path.join(THIS_FOLDER, 'sanalistaTuloste.json')
-sanatTuloste = open(relevantFilePath, 'w', encoding='utf8')
+sanatTulostePilkuilla = open(relevantFilePath, 'w', encoding='utf8')
 #jsonData = []
 
 for i in jsonSanat:
   print(i['s'])
   #jsonString = json.dumps({'word': i['s']})
   #jsonData.append({'word': i['s']})
-  sanatTuloste.write('{"word": "' + i['s']  + '" } \n')
+  sanatTulostePilkuilla.write('{"word": "' + i['s']  + '" }, \n')
 
-sanatTuloste.close()
+sanatTulostePilkuilla.close()
 
 #print(jsonString)
 #print(jsonData)
